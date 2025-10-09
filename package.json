@@ -2,15 +2,37 @@
   "name": "wordle-solve",
   "version": "0.0.1",
   "type": "module",
+  "zshy": "src/index.ts",
   "scripts": {
-    "serve": "bun run server.ts",
-    "generate": "bun run scripts/generate-pattern-matrix.ts"
+    "build": "zshy",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "serve": "npx tsx server.ts",
+    "generate": "npx tsx generate-pattern-matrix.ts"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
-    "typescript": "^5.9.2"
+    "@vercel/node": "^5.3.26",
+    "eslint": "^9.37.0",
+    "neostandard": "^0.12.2",
+    "typescript": "^5.9.2",
+    "zshy": "^0.4.3"
   },
-   "overrides": {
-    "@vercel/node>typescript": "5.9.2"
-   }
+  "dependencies": {
+    "@hono/node-server": "^1.19.5",
+    "hono": "^4.9.10"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
 }
