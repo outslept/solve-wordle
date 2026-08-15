@@ -75,7 +75,7 @@ export function getPatternCodeFromCodes(guessCodes: WordCodes, answerCodes: Word
   if (guessCodes.length !== WORD_LEN || answerCodes.length !== WORD_LEN) {
     throw new RangeError("word codes must have length " + WORD_LEN);
   }
-  const pat = [MISS, MISS, MISS, MISS, MISS];
+  const pat = Array(WORD_LEN).fill(MISS);
   let usedMask = 0;
 
   for (let i = 0; i < WORD_LEN; i++) {
