@@ -11,6 +11,9 @@ import {
   assertDefined,
   type WordList,
   type WordCodes,
+  CHAR_CODE_OFFSET,
+  ALPHABET_SIZE,
+  MAX_PATTERN_DIGIT,
 } from "./types.js";
 
 const POW3 = new Int32Array(WORD_LEN);
@@ -32,7 +35,7 @@ export function patternArrayToInt(arr: readonly number[]): number {
   let v = 0;
   for (let i = 0; i < WORD_LEN; i++) {
     const d = arr[i];
-    if (d === undefined || !Number.isInteger(d) || d < 0 || d > 2) {
+    if (d === undefined || !Number.isInteger(d) || d < 0 || d > MAX_PATTERN_DIGIT) {
       throw new RangeError("pattern digits must be integers 0..2");
     }
     v += d * POW3[i]!;
@@ -59,8 +62,8 @@ export function lettersToCodes(word: string): WordCodes {
   const out = new Uint8Array(WORD_LEN);
   for (let i = 0; i < WORD_LEN; i++) {
     const code = word.charCodeAt(i);
-    const c = code - 97;
-    if (c < 0 || c >= 26 || !Number.isInteger(c)) {
+    const c = code - CHAR_CODE_OFFSET;
+    if (c < 0 || c >= ALPHABET_SIZE || !Number.isInteger(c)) {
       throw new TypeError("invalid character in word");
     }
     out[i] = c;
@@ -306,13 +309,13 @@ function computeLetterFrequencies(
   pm: PatternMatrix,
   possibleAnswerIndices: readonly number[],
 ): Int32Array {
-  const freq = new Int32Array(26);
+  const freq = new Int32Array(ALPHABET_SIZE);
   for (let k = 0; k < possibleAnswerIndices.length; k++) {
     const ai = possibleAnswerIndices[k]!;
     const w = pm.answerWords[ai]!;
     for (let i = 0; i < WORD_LEN; i++) {
-      const c = w.charCodeAt(i) - 97;
-      if (c >>> 0 < 26) freq[c] = freq[c]! + 1;
+      const c = w.charCodeAt(i) - CHAR_CODE_OFFSET;
+      if (c >>> 0 < ALPHABET_SIZE) freq[c] = freq[c]! + 1;
     }
   }
   return freq;
@@ -325,8 +328,8 @@ function scoreAllowedByLetterFreqAll(pm: PatternMatrix, letterFreq: Int32Array):
     let seenMask = 0;
     let s = 0;
     for (let j = 0; j < WORD_LEN; j++) {
-      const c = w.charCodeAt(j) - 97;
-      if (c >>> 0 < 26) {
+      const c = w.charCodeAt(j) - CHAR_CODE_OFFSET;
+      if (c >>> 0 < ALPHABET_SIZE) {
         const bit = 1 << c;
         if ((seenMask & bit) === 0) {
           s += letterFreq[c]!;

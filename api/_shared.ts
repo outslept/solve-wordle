@@ -1,4 +1,3 @@
-// api/_shared.ts
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { PatternMatrix, readWordList } from "../src/index.js";
