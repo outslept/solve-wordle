@@ -37,9 +37,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (pm) {
     for (let i = 0; i < guesses.length; i++) {
       const gi = pm.getGuessIndex(guesses[i]!.toLowerCase());
-      possible = gi >= 0
-        ? pm.filterPossibleAnswersByPattern(gi, patterns[i]!, possible)
-        : applyPattern(possible, guesses[i]!, patterns[i]!, answerWords);
+      possible =
+        gi >= 0
+          ? pm.filterPossibleAnswersByPattern(gi, patterns[i]!, possible)
+          : applyPattern(possible, guesses[i]!, patterns[i]!, answerWords);
     }
   } else {
     for (let i = 0; i < guesses.length; i++) {

@@ -1,9 +1,4 @@
-import {
-  WORD_LEN,
-  PATTERN_COUNT,
-  ALPHABET_SIZE,
-  CHAR_CODE_OFFSET,
-} from "./types.js";
+import { WORD_LEN, PATTERN_COUNT, ALPHABET_SIZE, CHAR_CODE_OFFSET } from "./types.js";
 import { PatternMatrix } from "./matrix.js";
 import { pickByLetterFrequency } from "./frequency.js";
 
@@ -108,9 +103,7 @@ function buildCandidateIndices(
   const letterFreq = computeLetterFrequencies(pm, possibleAnswerIndices);
   const scores = scoreAllowedByLetterFreqAll(pm, letterFreq);
 
-  const sorted = [...possibleAnswerIndices].sort(
-    (a, b) => scores[b]! - scores[a]!,
-  );
+  const sorted = [...possibleAnswerIndices].sort((a, b) => scores[b]! - scores[a]!);
 
   const targetK = Math.max(
     minCandidates,
