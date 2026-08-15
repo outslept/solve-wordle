@@ -482,11 +482,7 @@ export function pickMinExpectedStepsGuess(
 
   const weights = getWeightsFromPriors(pm, possibleAnswerIndices, priorsMap);
 
-  let H0 = 0;
-  for (let i = 0; i < weights.length; i++) {
-    const p = weights[i]!;
-    if (p > 0) H0 -= p * Math.log2(p);
-  }
+  const H0 = entropyOfDistribution(weights);
 
   const pAnswer = new Float64Array(pm.cols);
   for (let j = 0; j < possibleAnswerIndices.length; j++) {
