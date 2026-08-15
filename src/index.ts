@@ -342,14 +342,6 @@ function scoreAllowedByLetterFreqAll(pm: PatternMatrix, letterFreq: Int32Array):
   return scores;
 }
 
-function selectTopKIndices(scores: Float64Array, k: number): number[] {
-  const n = scores.length;
-  const idx = new Array<number>(n);
-  for (let i = 0; i < n; i++) idx[i] = i;
-  idx.sort((a, b) => scores[b]! - scores[a]!);
-  return k >= n ? idx : idx.slice(0, k);
-}
-
 export function entropyToExpectedScore(ent: number): number {
   return Math.log(ent * 3.87 + 3.679);
 }
