@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { ensureReady, pm, allowedWords, answerWords } from "./_shared.js";
+import { ensureReady } from "./_shared.js";
 import {
   getPatternCode,
   pickMostInformativeGuess,
@@ -14,6 +14,7 @@ function applyPattern(
   possible: number[],
   guess: string,
   pattern: number,
+  answerWords: readonly string[],
 ): number[] {
   return possible.filter((ai) => {
     const aw = answerWords[ai]!;
@@ -22,7 +23,7 @@ function applyPattern(
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  await ensureReady();
+  const { pm, allowedWords, answerWords } = await ensureReady();
 
   const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 
@@ -38,11 +39,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const gi = pm.getGuessIndex(guesses[i]!.toLowerCase());
       possible = gi >= 0
         ? pm.filterPossibleAnswersByPattern(gi, patterns[i]!, possible)
-        : applyPattern(possible, guesses[i]!, patterns[i]!);
+        : applyPattern(possible, guesses[i]!, patterns[i]!, answerWords);
     }
   } else {
     for (let i = 0; i < guesses.length; i++) {
-      possible = applyPattern(possible, guesses[i]!, patterns[i]!);
+      possible = applyPattern(possible, guesses[i]!, patterns[i]!, answerWords);
     }
   }
 
