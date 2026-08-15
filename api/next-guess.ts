@@ -2,10 +2,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { ensureReady, pm, allowedWords, answerWords } from "./_shared.js";
 import {
   getPatternCode,
-  pickLetterFrequencyGuess,
   pickMostInformativeGuess,
   pickMinExpectedStepsGuess,
 } from "../src/index.js";
+import { pickByLetterFrequency } from "../src/frequency.js";
 
 type Method = "fast" | "entropy" | "expected";
 type Options = { cutoffFraction?: number; minCandidates?: number; maxCandidates?: number };
@@ -64,32 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let nextGuess = "";
 
   if (method === "fast") {
-    if (pm) {
-      nextGuess = pickLetterFrequencyGuess(pm, possible);
-    } else {
-      const freq = new Map<string, number>();
-      for (const ai of possible) {
-        const w = answerWords[ai]!;
-        for (const ch of w) freq.set(ch, (freq.get(ch) ?? 0) + 1);
-      }
-      let best = allowedWords[0]!;
-      let bestScore = -1;
-      for (const w of allowedWords) {
-        const seen = new Set<string>();
-        let s = 0;
-        for (const ch of w) {
-          if (!seen.has(ch)) {
-            s += freq.get(ch) ?? 0;
-            seen.add(ch);
-          }
-        }
-        if (s > bestScore) {
-          bestScore = s;
-          best = w;
-        }
-      }
-      nextGuess = best;
-    }
+    nextGuess = pickByLetterFrequency(allowedWords, answerWords, possible);
   } else {
     if (!pm) {
       res.status(400).json({
