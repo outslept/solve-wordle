@@ -393,11 +393,16 @@ function buildCandidateIndices(
 ): number[] {
   const letterFreq = computeLetterFrequencies(pm, possibleAnswerIndices);
   const scores = scoreAllowedByLetterFreqAll(pm, letterFreq);
+
+  const sorted = [...possibleAnswerIndices].sort(
+    (a, b) => scores[b]! - scores[a]!,
+  );
+
   const targetK = Math.max(
     minCandidates,
     Math.min(maxCandidates, Math.floor(pm.rows * cutoffFraction)),
   );
-  return selectTopKIndices(scores, Math.max(1, targetK));
+  return sorted.slice(0, Math.max(1, targetK));
 }
 
 function computePatternDistribution(
