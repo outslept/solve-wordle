@@ -351,7 +351,7 @@ function selectTopKIndices(scores: Float64Array, k: number): number[] {
 }
 
 export function entropyToExpectedScore(ent: number): number {
-  return Math.log(ent * 3.870 + 3.679);
+  return Math.log(ent * 3.87 + 3.679);
 }
 
 export function pickLetterFrequencyGuess(
