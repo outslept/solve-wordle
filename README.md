@@ -1,6 +1,7 @@
 # wordle-solve
 
 A tiny web app and API for solving Wordle. It supports three suggestion strategies:
+
 - `letter-frequency` (fast; no preprocessing)
 - `information gain` (entropy; requires a precomputed pattern matrix)
 - `expected steps` (score minimization; requires the same matrix)
@@ -52,6 +53,7 @@ curl -s -X POST http://localhost:3000/api/next-guess \
 ```
 
 Notes:
+
 - `guesses`: array of your past guesses (lowercase `a–z`, exactly `5` letters each)
 - `patterns`: array of pattern codes for each guess (same length as `guesses`)
 - `method`:

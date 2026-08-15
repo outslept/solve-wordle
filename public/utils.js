@@ -25,11 +25,11 @@
   }
 
   function simulatePattern(guess, answer) {
-    if (!guess || !answer) return patternArrayToInt([0,0,0,0,0]);
+    if (!guess || !answer) return patternArrayToInt([0, 0, 0, 0, 0]);
     const g = String(guess).toLowerCase();
     const a = String(answer).toLowerCase();
-    const pattern = [0,0,0,0,0];
-    const used = [false,false,false,false,false];
+    const pattern = [0, 0, 0, 0, 0];
+    const used = [false, false, false, false, false];
 
     // exacts
     for (let i = 0; i < 5; i++) {
@@ -56,5 +56,4 @@
   global.patternArrayToInt = patternArrayToInt;
   global.patternIntToArray = patternIntToArray;
   global.simulatePattern = simulatePattern;
-
 })(window);

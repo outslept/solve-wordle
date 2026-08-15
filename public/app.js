@@ -77,8 +77,7 @@
   }
 
   function patternArrayToIntLocal(arr) {
-    if (typeof window.patternArrayToInt === "function")
-      return window.patternArrayToInt(arr);
+    if (typeof window.patternArrayToInt === "function") return window.patternArrayToInt(arr);
     let value = 0,
       p = 1;
     for (let i = 0; i < 5; i++) {
@@ -88,8 +87,7 @@
     return value;
   }
   function patternIntToArrayLocal(v) {
-    if (typeof window.patternIntToArray === "function")
-      return window.patternIntToArray(v);
+    if (typeof window.patternIntToArray === "function") return window.patternIntToArray(v);
     const res = [];
     v = Number(v) || 0;
     for (let i = 0; i < 5; i++) {
@@ -99,8 +97,7 @@
     return res;
   }
   function simulatePatternLocal(g, a) {
-    if (typeof window.simulatePattern === "function")
-      return window.simulatePattern(g, a);
+    if (typeof window.simulatePattern === "function") return window.simulatePattern(g, a);
     const guess = String(g).toLowerCase();
     const answer = String(a).toLowerCase();
     const pat = [0, 0, 0, 0, 0];
@@ -136,9 +133,7 @@
       .slice(0, 10);
     letterFreqEl.innerHTML = `
       <h4>most common letters:</h4>
-      <div>${sorted
-        .map(([c, n]) => `<span class="freq-item">${c}: ${n}</span>`)
-        .join("")}</div>
+      <div>${sorted.map(([c, n]) => `<span class="freq-item">${c}: ${n}</span>`).join("")}</div>
     `;
   }
 
@@ -153,8 +148,7 @@
     const moreCount = currentPossibleAnswers.length - sampleSize;
     let html = `<h4 style="margin: 20px 0 12px 0;">remaining possibilities:</h4>`;
     html += `<div>${sample.join(", ")}`;
-    if (moreCount > 0)
-      html += ` <span style="color: #999;">(+${moreCount} more)</span>`;
+    if (moreCount > 0) html += ` <span style="color: #999;">(+${moreCount} more)</span>`;
     html += `</div>`;
     sampleWordsEl.innerHTML = html;
   }
@@ -172,18 +166,14 @@
       let testPossible = answers.slice();
       for (let j = 0; j <= i; j++) {
         testPossible = testPossible.filter(
-          (word) => simulatePatternLocal(guesses[j], word) === patterns[j]
+          (word) => simulatePatternLocal(guesses[j], word) === patterns[j],
         );
       }
       lastPossible = testPossible;
 
       const patternArray = patternIntToArrayLocal(patterns[i]);
-      const patternStr = patternArray
-        .map((p) => (p === 0 ? "⬛" : p === 1 ? "🟨" : "🟩"))
-        .join("");
-      diagnosticsHtml += `${i + 1}. ${guesses[i]} ${patternStr} → ${
-        testPossible.length
-      } left`;
+      const patternStr = patternArray.map((p) => (p === 0 ? "⬛" : p === 1 ? "🟨" : "🟩")).join("");
+      diagnosticsHtml += `${i + 1}. ${guesses[i]} ${patternStr} → ${testPossible.length} left`;
 
       if (testPossible.length === 0) {
         diagnosticsHtml += ` <span style="color: #e00;">⚠️ contradiction here!</span>`;
@@ -215,8 +205,7 @@
         const tilesHtml = patternArray
           .map((state, i) => {
             const char = guess[i] ? guess[i].toUpperCase() : "";
-            const bgColor =
-              state === 0 ? "#787c7e" : state === 1 ? "#c9b458" : "#6aaa64";
+            const bgColor = state === 0 ? "#787c7e" : state === 1 ? "#c9b458" : "#6aaa64";
             return `<div class="history-tile" style="background: ${bgColor}">${char}</div>`;
           })
           .join("");
@@ -225,9 +214,7 @@
         <div class="history-row" data-index="${index}">
           <div class="history-tiles">${tilesHtml}</div>
           <div class="meta">
-            <strong>${guess}</strong> | pattern: ${patterns[index]} | step ${
-          index + 1
-        }
+            <strong>${guess}</strong> | pattern: ${patterns[index]} | step ${index + 1}
             <button style="margin-left: 8px; padding: 2px 6px; font-size: 11px;" onclick="checkStep(${index})">check</button>
           </div>
         </div>
@@ -253,17 +240,12 @@
     for (let i = 0; i <= stepIndex; i++) {
       const before = remaining.length;
       remaining = remaining.filter(
-        (word) => simulatePatternLocal(guesses[i], word) === patterns[i]
+        (word) => simulatePatternLocal(guesses[i], word) === patterns[i],
       );
-      console.log(
-        `step ${i + 1}: ${guesses[i]} → ${before} → ${remaining.length}`
-      );
-      if (remaining.length <= 10)
-        console.log(`remaining: ${remaining.join(", ")}`);
+      console.log(`step ${i + 1}: ${guesses[i]} → ${before} → ${remaining.length}`);
+      if (remaining.length <= 10) console.log(`remaining: ${remaining.join(", ")}`);
     }
-    alert(
-      `after step ${stepIndex + 1}: ${remaining.length} possibilities remaining`
-    );
+    alert(`after step ${stepIndex + 1}: ${remaining.length} possibilities remaining`);
   };
 
   function startEdit(index) {
@@ -338,8 +320,7 @@
       possibleCountEl.textContent = String(data.possibleCount || 0);
       requestTimeEl.textContent = String(requestTime);
 
-      const currentEntropy =
-        data.possibleCount > 0 ? Math.log2(data.possibleCount) : 0;
+      const currentEntropy = data.possibleCount > 0 ? Math.log2(data.possibleCount) : 0;
       entropyEl.textContent = currentEntropy.toFixed(2);
 
       currentPossibleAnswers = Array.isArray(data.sample) ? data.sample : [];
@@ -416,13 +397,9 @@
       await requestSuggestion();
     } else {
       suggestionEl.textContent = "—";
-      possibleCountEl.textContent = answers.length
-        ? String(answers.length)
-        : "—";
+      possibleCountEl.textContent = answers.length ? String(answers.length) : "—";
       requestTimeEl.textContent = "—";
-      entropyEl.textContent = answers.length
-        ? Math.log2(answers.length).toFixed(2)
-        : "—";
+      entropyEl.textContent = answers.length ? Math.log2(answers.length).toFixed(2) : "—";
       currentPossibleAnswers = answers.slice();
       updateLetterFrequency();
       updateSampleWords();
@@ -439,9 +416,7 @@
     suggestionEl.textContent = "—";
     possibleCountEl.textContent = answers.length ? String(answers.length) : "—";
     requestTimeEl.textContent = "—";
-    entropyEl.textContent = answers.length
-      ? Math.log2(answers.length).toFixed(2)
-      : "—";
+    entropyEl.textContent = answers.length ? Math.log2(answers.length).toFixed(2) : "—";
     currentPossibleAnswers = answers.slice();
     updateLetterFrequency();
     updateSampleWords();
@@ -457,8 +432,7 @@
   setPickerFromWord("");
   renderHistory();
   suggestionEl.textContent = "—";
-  if (answers.length > 0)
-    entropyEl.textContent = Math.log2(answers.length).toFixed(2);
+  if (answers.length > 0) entropyEl.textContent = Math.log2(answers.length).toFixed(2);
   sampleWordsEl.innerHTML =
     '<div style="text-align: center; color: #999; margin-top: 20px;">enter your first guess to begin</div>';
 })();
