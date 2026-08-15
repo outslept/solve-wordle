@@ -402,6 +402,21 @@ function buildCandidateIndices(
   return selectTopKIndices(scores, Math.max(1, targetK));
 }
 
+function computePatternDistribution(
+  pm: PatternMatrix,
+  guessIndex: number,
+  possibleAnswerIndices: readonly number[],
+  weights: Float64Array,
+): Float64Array {
+  const dist = new Float64Array(PATTERN_COUNT);
+  const base = guessIndex * pm.cols;
+  for (let k = 0; k < possibleAnswerIndices.length; k++) {
+    const col = possibleAnswerIndices[k]!;
+    dist[pm.data[base + col]!]! += weights[k]!;
+  }
+  return dist;
+}
+
 export function pickMostInformativeGuess(
   pm: PatternMatrix,
   possibleAnswerIndices: readonly number[],
@@ -430,26 +445,13 @@ export function pickMostInformativeGuess(
     maxCandidates,
   );
 
-  const dist = new Float64Array(PATTERN_COUNT);
-
   let bestIdx = candidateIndices[0]!;
   let bestEnt = -Infinity;
 
   for (let ci = 0; ci < candidateIndices.length; ci++) {
     const guessIndex = candidateIndices[ci]!;
-    dist.fill(0);
-    const base = guessIndex * pm.cols;
-
-    for (let k = 0; k < possibleAnswerIndices.length; k++) {
-      const col = possibleAnswerIndices[k]!;
-      dist[pm.data[base + col]!]! += weights[k]!;
-    }
-
-    let H = 0;
-    for (let p = 0; p < PATTERN_COUNT; p++) {
-      const v = dist[p]!;
-      if (v > 0) H -= v * Math.log2(v);
-    }
+    const dist = computePatternDistribution(pm, guessIndex, possibleAnswerIndices, weights);
+    const H = entropyOfDistribution(dist);
 
     if (H > bestEnt) {
       bestEnt = H;
@@ -501,26 +503,13 @@ export function pickMinExpectedStepsGuess(
     maxCandidates,
   );
 
-  const dist = new Float64Array(PATTERN_COUNT);
-
   let bestIdx = candidateIndices[0]!;
   let bestVal = Number.POSITIVE_INFINITY;
 
   for (let ci = 0; ci < candidateIndices.length; ci++) {
     const guessIndex = candidateIndices[ci]!;
-    dist.fill(0);
-    const base = guessIndex * pm.cols;
-
-    for (let k = 0; k < possibleAnswerIndices.length; k++) {
-      const col = possibleAnswerIndices[k]!;
-      dist[pm.data[base + col]!]! += weights[k]!;
-    }
-
-    let eInfo = 0;
-    for (let p = 0; p < PATTERN_COUNT; p++) {
-      const v = dist[p]!;
-      if (v > 0) eInfo -= v * Math.log2(v);
-    }
+    const dist = computePatternDistribution(pm, guessIndex, possibleAnswerIndices, weights);
+    const eInfo = entropyOfDistribution(dist);
 
     const infoLeft = H0 > eInfo ? H0 - eInfo : 0;
     const ansIdx = allowedToAnswer[guessIndex]!;
