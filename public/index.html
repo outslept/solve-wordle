@@ -1,79 +1,68 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>wordle solver</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="container">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wordle Solver</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <main class="container">
+    <section class="card input-card">
       <div class="input-section">
-        <div class="input-group">
-          <label for="guessInput">enter your guess (5 letters):</label>
-          <input type="text" id="guessInput" maxlength="5" placeholder="words" />
-        </div>
-
-        <div class="board">
-          <div class="row" id="pickerRow"></div>
-        </div>
-
-        <div class="controls">
-          <select id="method">
-            <option value="fast">letter frequency</option>
-            <option value="entropy">entropy maximization</option>
-            <option value="expected">expected score minimization</option>
+        <div class="input-row">
+          <input type="text" id="guessInput" maxlength="5" placeholder="word" autocomplete="off" aria-label="Guess" />
+          <div id="pickerRow" class="tiles" role="group" aria-label="Color pattern"></div>
+          <select id="method" aria-label="Strategy">
+            <option value="fast">Frequency</option>
+            <option value="entropy">Entropy</option>
+            <option value="expected">Expected steps</option>
           </select>
-
-          <button id="addGuessBtn" class="primary">add guess</button>
-          <button id="updateGuessBtn" class="primary" style="display: none">update guess</button>
-          <button id="cancelEditBtn" style="display: none">cancel</button>
-          <button id="undoBtn">undo last</button>
-          <button id="clearBtn">clear all</button>
         </div>
-
-        <div class="hint">
-          click tiles to cycle colors: gray (miss) → yellow (wrong position) → green (correct
-          position)
+        <div class="actions">
+          <button id="addGuessBtn" class="btn primary">Add</button>
+          <button id="updateGuessBtn" class="btn primary hidden">Update</button>
+          <button id="cancelEditBtn" class="btn hidden">Cancel</button>
+          <button id="undoBtn" class="btn">Undo</button>
+          <button id="clearBtn" class="btn">Clear</button>
         </div>
       </div>
+    </section>
 
-      <div class="info-grid">
-        <div class="info-panel">
-          <h3>next suggestion</h3>
-          <div id="suggestion" class="suggestion">—</div>
-
-          <div class="stats">
-            <div class="stat">
-              <div id="possibleCount" class="stat-value">—</div>
-              <div class="stat-label">possible</div>
-            </div>
-            <div class="stat">
-              <div id="requestTime" class="stat-value">—</div>
-              <div class="stat-label">time (ms)</div>
-            </div>
-            <div class="stat">
-              <div id="entropy" class="stat-value">—</div>
-              <div class="stat-label">entropy</div>
-            </div>
-          </div>
+    <section class="card suggestion-card">
+      <h2>Next suggestion</h2>
+      <div id="suggestion" class="suggestion">—</div>
+      <div class="stats">
+        <div class="stat">
+          <span id="possibleCount" class="stat-value">—</span>
+          <span class="stat-label">Possible</span>
         </div>
-
-        <div class="info-panel">
-          <h3>algorithm analysis</h3>
-          <div class="analysis-section">
-            <div id="letterFreq" class="letter-freq"></div>
-            <div id="sampleWords" class="sample-words"></div>
-          </div>
+        <div class="stat">
+          <span id="requestTime" class="stat-value">—</span>
+          <span class="stat-label">Time (ms)</span>
+        </div>
+        <div class="stat">
+          <span id="entropy" class="stat-value">—</span>
+          <span class="stat-label">Entropy</span>
         </div>
       </div>
+    </section>
 
-      <div class="history">
-        <h3>guess history</h3>
-        <div id="historyContent"></div>
-      </div>
-    </div>
-    <script src="utils.js"></script>
-    <script src="app.js"></script>
-  </body>
+    <section class="card analysis-card">
+      <h2>Analysis</h2>
+      <div id="letterFreq" class="letter-freq"></div>
+      <div id="sampleWords" class="sample-words"></div>
+    </section>
+
+    <section class="card history-card">
+      <h2>History</h2>
+      <div id="historyContent"></div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+
 </html>
