@@ -350,10 +350,8 @@ function selectTopKIndices(scores: Float64Array, k: number): number[] {
   return k >= n ? idx : idx.slice(0, k);
 }
 
-/*  entropy → “expected steps” surrogate */
 export function entropyToExpectedScore(ent: number): number {
-  const minScore = Math.pow(2, -ent) + 2 * (1 - Math.pow(2, -ent));
-  return minScore + (1.5 * ent) / 11.5;
+  return Math.log(ent * 3.870 + 3.679);
 }
 
 export function pickLetterFrequencyGuess(
