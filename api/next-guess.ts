@@ -10,6 +10,17 @@ import {
 type Method = "fast" | "entropy" | "expected";
 type Options = { cutoffFraction?: number; minCandidates?: number; maxCandidates?: number };
 
+function applyPattern(
+  possible: number[],
+  guess: string,
+  pattern: number,
+): number[] {
+  return possible.filter((ai) => {
+    const aw = answerWords[ai]!;
+    return getPatternCode(guess, aw) === pattern;
+  });
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   await ensureReady();
 
@@ -25,21 +36,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (pm) {
     for (let i = 0; i < guesses.length; i++) {
       const gi = pm.getGuessIndex(guesses[i]!.toLowerCase());
-      if (gi >= 0) {
-        possible = pm.filterPossibleAnswersByPattern(gi, patterns[i]!, possible);
-      } else {
-        possible = possible.filter((ai) => {
-          const aw = answerWords[ai]!;
-          return getPatternCode(guesses[i]!, aw) === patterns[i]!;
-        });
-      }
+      possible = gi >= 0
+        ? pm.filterPossibleAnswersByPattern(gi, patterns[i]!, possible)
+        : applyPattern(possible, guesses[i]!, patterns[i]!);
     }
   } else {
     for (let i = 0; i < guesses.length; i++) {
-      possible = possible.filter((ai) => {
-        const aw = answerWords[ai]!;
-        return getPatternCode(guesses[i]!, aw) === patterns[i]!;
-      });
+      possible = applyPattern(possible, guesses[i]!, patterns[i]!);
     }
   }
 
