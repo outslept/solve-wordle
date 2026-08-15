@@ -16,12 +16,3 @@ export type WordCodes = Uint8Array;
 export function isWord(value: unknown): value is Word {
   return typeof value === "string" && /^[a-z]{5}$/.test(value);
 }
-
-export function assertDefined<T>(
-  value: T | undefined | null,
-  message?: string,
-): asserts value is T {
-  if (value === undefined || value === null) {
-    throw new TypeError(message ?? "value is undefined");
-  }
-}

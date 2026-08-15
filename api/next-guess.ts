@@ -44,13 +44,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (possible.length === 0) {
-    res
-      .status(200)
-      .json({
-        error: "no possibilities left (check patterns/guesses)",
-        possibleCount: 0,
-        sample: [],
-      });
+    res.status(200).json({
+      error: "no possibilities left (check patterns/guesses)",
+      possibleCount: 0,
+      sample: [],
+    });
     return;
   }
 
@@ -91,12 +89,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   } else {
     if (!pm) {
-      res
-        .status(400)
-        .json({
-          error:
-            "method requires precomputed pattern matrix. Generate data/pattern_allowed_answers.bin first.",
-        });
+      res.status(400).json({
+        error:
+          "method requires precomputed pattern matrix. Generate data/pattern_allowed_answers.bin first.",
+      });
       return;
     }
     const priors = new Map<string, number>();
