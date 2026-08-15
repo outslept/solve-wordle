@@ -386,6 +386,22 @@ export function pickLetterFrequencyGuess(
   return best;
 }
 
+function buildCandidateIndices(
+  pm: PatternMatrix,
+  possibleAnswerIndices: readonly number[],
+  cutoffFraction: number,
+  minCandidates: number,
+  maxCandidates: number,
+): number[] {
+  const letterFreq = computeLetterFrequencies(pm, possibleAnswerIndices);
+  const scores = scoreAllowedByLetterFreqAll(pm, letterFreq);
+  const targetK = Math.max(
+    minCandidates,
+    Math.min(maxCandidates, Math.floor(pm.rows * cutoffFraction)),
+  );
+  return selectTopKIndices(scores, Math.max(1, targetK));
+}
+
 export function pickMostInformativeGuess(
   pm: PatternMatrix,
   possibleAnswerIndices: readonly number[],
@@ -406,13 +422,13 @@ export function pickMostInformativeGuess(
 
   const weights = getWeightsFromPriors(pm, possibleAnswerIndices, priorsMap);
 
-  const letterFreq = computeLetterFrequencies(pm, possibleAnswerIndices);
-  const scores = scoreAllowedByLetterFreqAll(pm, letterFreq);
-  const targetK = Math.max(
+  const candidateIndices = buildCandidateIndices(
+    pm,
+    possibleAnswerIndices,
+    cutoffFraction,
     minCandidates,
-    Math.min(maxCandidates, Math.floor(pm.rows * cutoffFraction)),
+    maxCandidates,
   );
-  const candidateIndices = selectTopKIndices(scores, Math.max(1, targetK));
 
   const dist = new Float64Array(PATTERN_COUNT);
 
@@ -477,13 +493,13 @@ export function pickMinExpectedStepsGuess(
 
   const allowedToAnswer = getAllowedToAnswerIndex(pm);
 
-  const letterFreq = computeLetterFrequencies(pm, possibleAnswerIndices);
-  const scores = scoreAllowedByLetterFreqAll(pm, letterFreq);
-  const targetK = Math.max(
+  const candidateIndices = buildCandidateIndices(
+    pm,
+    possibleAnswerIndices,
+    cutoffFraction,
     minCandidates,
-    Math.min(maxCandidates, Math.floor(pm.rows * cutoffFraction)),
+    maxCandidates,
   );
-  const candidateIndices = selectTopKIndices(scores, Math.max(1, targetK));
 
   const dist = new Float64Array(PATTERN_COUNT);
 
