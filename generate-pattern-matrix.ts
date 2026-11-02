@@ -1,19 +1,19 @@
-import { stat } from "node:fs/promises";
-import { join } from "node:path";
-import { generatePatternMatrix } from "./solver/matrix.ts";
+import fs from 'node:fs';
+import path from 'node:path';
+import { generatePatternMatrix, parseWords } from './solver/index.ts';
 
-const dataDir = join(import.meta.dirname, "data");
-const allowedFile = join(dataDir, "allowed_words.txt");
-const answersFile = join(dataDir, "possible_words.txt");
-const outFile = join(dataDir, "pattern_allowed_answers.bin");
+const dataDir = path.resolve('data');
+const allowedWords = parseWords(
+  fs.readFileSync(path.join(dataDir, 'allowed_words.txt'), 'utf-8'),
+);
+const answerWords = parseWords(
+  fs.readFileSync(path.join(dataDir, 'possible_words.txt'), 'utf-8'),
+);
 
-const start = performance.now();
-console.log("Generating pattern matrix...");
+const matrix = generatePatternMatrix(allowedWords, answerWords);
+const outPath = path.join(dataDir, 'pattern_allowed_answers.bin');
 
-await generatePatternMatrix(allowedFile, answersFile, outFile);
-
-const { size } = await stat(outFile);
-const seconds = ((performance.now() - start) / 1000).toFixed(2);
-const megabytes = (size / 1024 ** 2).toFixed(2);
-
-console.log(`Done in ${seconds}s: ${outFile} (${megabytes} MB)`);
+fs.writeFileSync(outPath, matrix);
+console.log(
+  `Saved ${matrix.byteLength} bytes (${allowedWords.length}x${answerWords.length}) to ${outPath}`,
+);

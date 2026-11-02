@@ -1,7 +1,7 @@
 import { useEffect } from "preact/hooks";
 import { WORD_LEN } from "../../solver/pattern.ts";
 import { getTileState, MAX_TURNS, TILE_LABELS } from "../types.ts";
-import type { StepRecord, TileState } from "../types.ts";
+import type { StepRecord } from "../types.ts";
 
 interface WordleBoardProps {
   steps: StepRecord[];

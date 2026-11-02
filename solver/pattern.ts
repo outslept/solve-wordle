@@ -1,48 +1,47 @@
 export const WORD_LEN = 5;
 export const PATTERN_COUNT = 3 ** WORD_LEN;
 
-export type Strategy = "fast" | "entropy" | "expected";
-export type Word = string & { readonly __brand: "word" };
+export type Strategy = 'fast' | 'entropy' | 'expected';
+export type Word = string & { readonly __brand: 'word' };
 
-const MISPLACED = 1;
-const EXACT = 2;
+const WORD_RE = /^[a-z]{5}$/;
+const ASCII_A = 97;
 
 export function isWord(value: string): value is Word {
-  return /^[a-z]{5}$/.test(value);
+  return WORD_RE.test(value);
 }
 
 export function getPatternCode(guess: string, answer: string): number {
-  if (guess.length !== WORD_LEN || answer.length !== WORD_LEN) {
-    throw new RangeError(`words must have length ${WORD_LEN}`);
-  }
+  const counts = new Uint8Array(26);
 
-  let usedMask = 0;
-  let exactMask = 0;
-  let code = 0;
-
-  // mark exact matches first so duplicate letters in the guess cannot claim them as misplaced
-  for (let i = 0, power = 1; i < WORD_LEN; i++, power *= 3) {
-    if (guess.charCodeAt(i) === answer.charCodeAt(i)) {
-      const bit = 1 << i;
-      usedMask |= bit;
-      exactMask |= bit;
-      code += EXACT * power;
+  for (let i = 0; i < WORD_LEN; i++) {
+    if (guess.charCodeAt(i) !== answer.charCodeAt(i)) {
+      const idx = answer.charCodeAt(i) - ASCII_A;
+      counts[idx] = (counts[idx] ?? 0) + 1;
     }
   }
 
-  // consume remaining answer letters left-to-right so excess duplicate letters stay 0 (miss)
-  for (let i = 0, power = 1; i < WORD_LEN; i++, power *= 3) {
-    if ((exactMask & (1 << i)) !== 0) continue;
-    const ch = guess.charCodeAt(i);
+  let code = 0;
+  let multiplier = 1;
 
-    for (let j = 0; j < WORD_LEN; j++) {
-      const bit = 1 << j;
-      if ((usedMask & bit) === 0 && answer.charCodeAt(j) === ch) {
-        usedMask |= bit;
-        code += MISPLACED * power;
-        break;
+  for (let i = 0; i < WORD_LEN; i++) {
+    const gCode = guess.charCodeAt(i);
+    let digit = 0;
+
+    if (gCode === answer.charCodeAt(i)) {
+      digit = 2;
+    } else {
+      const idx = gCode - ASCII_A;
+      const available = counts[idx];
+
+      if (available !== undefined && available > 0) {
+        digit = 1;
+        counts[idx] = available - 1;
       }
     }
+
+    code += digit * multiplier;
+    multiplier *= 3;
   }
 
   return code;

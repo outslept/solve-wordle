@@ -1,57 +1,56 @@
-import { WORD_LEN } from "./pattern.ts";
+import type { Word } from './pattern.ts';
 
-const ALPHABET_SIZE = 26;
-const CHAR_CODE_A = 97;
+const ASCII_A = 97;
 
-export function scoreWordsByFrequency(
-  allowedWords: readonly string[],
-  answerWords: readonly string[],
-  remainingAnswers: readonly number[],
-): Int32Array {
-  const counts = new Int32Array(ALPHABET_SIZE);
-  for (const answerIdx of remainingAnswers) {
-    const word = answerWords[answerIdx] ?? "";
-    for (let i = 0; i < WORD_LEN; i++) {
-      const c = word.charCodeAt(i) - CHAR_CODE_A;
-      counts[c] = (counts[c] ?? 0) + 1;
+export function scoreWordsByFrequency(words: Word[]): Map<Word, number> {
+  const counts = new Uint32Array(26);
+
+  for (const word of words) {
+    for (let i = 0; i < word.length; i++) {
+      const idx = word.charCodeAt(i) - ASCII_A;
+      const current = counts[idx];
+
+      if (current !== undefined) {
+        counts[idx] = current + 1;
+      }
     }
   }
 
-  const scores = new Int32Array(allowedWords.length);
-  for (let i = 0; i < allowedWords.length; i++) {
-    const word = allowedWords[i] ?? "";
+  const scores = new Map<Word, number>();
+
+  for (const word of words) {
     let seenMask = 0;
     let score = 0;
 
-    for (let j = 0; j < WORD_LEN; j++) {
-      const c = word.charCodeAt(j) - CHAR_CODE_A;
-      const bit = 1 << c;
-      // count each unique letter once so repeated letters do not inflate coverage
+    for (let i = 0; i < word.length; i++) {
+      const idx = word.charCodeAt(i) - ASCII_A;
+      const bit = 1 << idx;
+
       if ((seenMask & bit) === 0) {
         seenMask |= bit;
-        score += counts[c] ?? 0;
+        const freq = counts[idx];
+
+        if (freq !== undefined) {
+          score += freq;
+        }
       }
     }
-    scores[i] = score;
+
+    scores.set(word, score);
   }
 
   return scores;
 }
 
-export function pickByLetterFrequency(
-  allowedWords: readonly string[],
-  answerWords: readonly string[],
-  remainingAnswers: readonly number[],
-): string {
-  const scores = scoreWordsByFrequency(allowedWords, answerWords, remainingAnswers);
-  let bestWord = allowedWords[0] ?? "";
+export function pickByLetterFrequency(words: Word[]): Word | null {
+  const scores = scoreWordsByFrequency(words);
+  let bestWord: Word | null = null;
   let bestScore = -1;
 
-  for (let i = 0; i < allowedWords.length; i++) {
-    const score = scores[i] ?? -1;
+  for (const [word, score] of scores) {
     if (score > bestScore) {
       bestScore = score;
-      bestWord = allowedWords[i] ?? bestWord;
+      bestWord = word;
     }
   }
 

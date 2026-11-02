@@ -1,171 +1,269 @@
-import { PATTERN_COUNT, getPatternCode, type Strategy } from "./pattern.ts";
-import { PatternMatrix } from "./matrix.ts";
-import { pickByLetterFrequency, scoreWordsByFrequency } from "./frequency.ts";
-
-const FIRST_GUESS = "tares";
-const CUTOFF_FRACTION = 1 / 3;
-const MIN_CANDIDATES = 20;
+import { pickByLetterFrequency, scoreWordsByFrequency } from './frequency.ts';
+import type { PatternMatrix } from './matrix.ts';
+import { PATTERN_COUNT } from './pattern.ts';
+import type { Strategy, Word } from './pattern.ts';
 
 function estimateRemainingSteps(remainingEntropy: number): number {
   return Math.log(remainingEntropy * 3.87 + 3.679);
 }
 
-// prunes by letter coverage instead of corpus word frequencies, upgrade if word frequency data is added
-function selectCandidates(pm: PatternMatrix, remainingAnswers: readonly number[]): number[] {
-  const scores = scoreWordsByFrequency(pm.allowedWords, pm.answerWords, remainingAnswers);
+function buildWordIndex(words: Word[]): Map<Word, number> {
+  const lookup = new Map<Word, number>();
 
-  const allAllowed = Array.from({ length: pm.rows }, (_, i) => i);
-  allAllowed.sort((a, b) => (scores[b] ?? 0) - (scores[a] ?? 0));
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
 
-  const limit = Math.max(MIN_CANDIDATES, Math.floor(remainingAnswers.length * CUTOFF_FRACTION));
-  const candidates = new Set<number>(allAllowed.slice(0, limit));
-
-  // always include remaining answers so the solver can weigh immediate wins against pure probes
-  for (const ansIdx of remainingAnswers) {
-    const guessIdx = pm.getGuessIndex(pm.answerWords[ansIdx] ?? "");
-    if (guessIdx >= 0) candidates.add(guessIdx);
+    if (word !== undefined) {
+      lookup.set(word, i);
+    }
   }
 
-  return [...candidates];
+  return lookup;
 }
 
-function computePatternEntropy(
-  pm: PatternMatrix,
-  guessIndex: number,
-  remainingAnswers: readonly number[],
-  buckets: Int32Array,
-): number {
-  buckets.fill(0);
-  const total = remainingAnswers.length;
+// prune candidate pool to top frequency words + remaining answers, full scan when WebWorker is added
+function selectCandidateWords(
+  allowedWords: Word[],
+  remainingAnswers: Word[],
+): Word[] {
+  const ranked = Array.from(scoreWordsByFrequency(allowedWords)).sort(
+    (a, b) => b[1] - a[1],
+  );
+  const limit = Math.max(20, Math.floor(remainingAnswers.length / 3));
+  const pool = new Set<Word>(remainingAnswers);
 
-  for (const answerIndex of remainingAnswers) {
-    const pattern = pm.getPattern(guessIndex, answerIndex);
-    buckets[pattern] = (buckets[pattern] ?? 0) + 1;
+  for (let i = 0; i < limit && i < ranked.length; i++) {
+    const entry = ranked[i];
+
+    if (entry !== undefined) {
+      pool.add(entry[0]);
+    }
+  }
+
+  return Array.from(pool);
+}
+
+function computeGuessEntropy(
+  guessIdx: number,
+  answerIndices: number[],
+  pm: PatternMatrix,
+): number {
+  const total = answerIndices.length;
+
+  if (total === 0) {
+    return 0;
+  }
+
+  const patternCounts = new Int32Array(PATTERN_COUNT);
+
+  for (const ansIdx of answerIndices) {
+    const pattern = pm.get(guessIdx, ansIdx);
+    const current = patternCounts[pattern];
+
+    if (current !== undefined) {
+      patternCounts[pattern] = current + 1;
+    }
   }
 
   let entropy = 0;
-  for (const count of buckets) {
-    if (count > 0) {
-      const p = count / total;
-      entropy -= p * Math.log2(p);
+
+  for (let p = 0; p < PATTERN_COUNT; p++) {
+    const count = patternCounts[p];
+
+    if (count !== undefined && count > 0) {
+      const prob = count / total;
+      entropy -= prob * Math.log2(prob);
     }
   }
+
   return entropy;
 }
 
 export function pickMostInformativeGuess(
+  allowedWords: Word[],
+  answerWords: Word[],
+  remainingAnswers: Word[],
   pm: PatternMatrix,
-  remainingAnswers: readonly number[],
-): string {
-  if (pm.rows === 0 || remainingAnswers.length === 0) {
-    throw new Error("no candidates");
-  }
-  if (remainingAnswers.length === pm.cols && pm.getGuessIndex(FIRST_GUESS) >= 0) {
-    return FIRST_GUESS;
+): Word | null {
+  if (remainingAnswers.length === 0) {
+    return null;
   }
 
-  const candidates = selectCandidates(pm, remainingAnswers);
-  const buckets = new Int32Array(PATTERN_COUNT);
+  const allowedIndex = buildWordIndex(allowedWords);
+  const answerIndex = buildWordIndex(answerWords);
+  const answerIndices: number[] = [];
 
-  let bestIndex = candidates[0] ?? 0;
-  let bestEntropy = -Infinity;
+  for (const word of remainingAnswers) {
+    const idx = answerIndex.get(word);
 
-  for (const guessIndex of candidates) {
-    const entropy = computePatternEntropy(pm, guessIndex, remainingAnswers, buckets);
-    if (entropy > bestEntropy) {
-      bestEntropy = entropy;
-      bestIndex = guessIndex;
+    if (idx !== undefined) {
+      answerIndices.push(idx);
     }
   }
 
-  return pm.allowedWords[bestIndex] ?? "";
+  const candidates = selectCandidateWords(allowedWords, remainingAnswers);
+  let bestWord: Word | null = null;
+  let maxEntropy = -1;
+
+  for (const word of candidates) {
+    const guessIdx = allowedIndex.get(word);
+
+    if (guessIdx === undefined) {
+      continue;
+    }
+
+    const entropy = computeGuessEntropy(guessIdx, answerIndices, pm);
+
+    if (entropy > maxEntropy) {
+      maxEntropy = entropy;
+      bestWord = word;
+    }
+  }
+
+  return bestWord;
 }
 
 export function pickMinExpectedStepsGuess(
+  allowedWords: Word[],
+  answerWords: Word[],
+  remainingAnswers: Word[],
   pm: PatternMatrix,
-  remainingAnswers: readonly number[],
-): string {
-  if (pm.rows === 0 || remainingAnswers.length === 0) {
-    throw new Error("no candidates");
-  }
-  if (remainingAnswers.length === pm.cols && pm.getGuessIndex(FIRST_GUESS) >= 0) {
-    return FIRST_GUESS;
-  }
-
+): Word | null {
   const total = remainingAnswers.length;
-  const initialEntropy = Math.log2(total);
-  const winProb = 1 / total;
 
-  const remainingGuessIndices = new Set<number>();
-  for (const ansIdx of remainingAnswers) {
-    const guessIdx = pm.getGuessIndex(pm.answerWords[ansIdx] ?? "");
-    if (guessIdx >= 0) remainingGuessIndices.add(guessIdx);
+  if (total === 0) {
+    return null;
   }
 
-  const candidates = selectCandidates(pm, remainingAnswers);
-  const buckets = new Int32Array(PATTERN_COUNT);
+  const allowedIndex = buildWordIndex(allowedWords);
+  const answerIndex = buildWordIndex(answerWords);
+  const answerIndices: number[] = [];
 
-  let bestIndex = candidates[0] ?? 0;
-  let bestScore = Infinity;
+  for (const word of remainingAnswers) {
+    const idx = answerIndex.get(word);
 
-  for (const guessIndex of candidates) {
-    const infoGain = computePatternEntropy(pm, guessIndex, remainingAnswers, buckets);
-    const infoLeft = Math.max(0, initialEntropy - infoGain);
-    // only words still in the answer pool can win on this turn; pure probes have pWin = 0
-    const pWin = remainingGuessIndices.has(guessIndex) ? winProb : 0;
-    const expectedSteps = pWin + (1 - pWin) * estimateRemainingSteps(infoLeft);
-
-    if (expectedSteps < bestScore) {
-      bestScore = expectedSteps;
-      bestIndex = guessIndex;
+    if (idx !== undefined) {
+      answerIndices.push(idx);
     }
   }
 
-  return pm.allowedWords[bestIndex] ?? "";
+  const remainingSet = new Set<Word>(remainingAnswers);
+  const initialEntropy = Math.log2(total);
+  const candidates = selectCandidateWords(allowedWords, remainingAnswers);
+
+  let bestWord: Word | null = null;
+  let minScore = Infinity;
+
+  for (const word of candidates) {
+    const guessIdx = allowedIndex.get(word);
+
+    if (guessIdx === undefined) {
+      continue;
+    }
+
+    const infoGain = computeGuessEntropy(guessIdx, answerIndices, pm);
+    const infoLeft = Math.max(0, initialEntropy - infoGain);
+    const pWin = remainingSet.has(word) ? 1 / total : 0;
+    const expectedScore =
+      pWin + (1 - pWin) * estimateRemainingSteps(infoLeft);
+
+    if (expectedScore < minScore) {
+      minScore = expectedScore;
+      bestWord = word;
+    }
+  }
+
+  return bestWord;
 }
 
 export function filterRemainingAnswers(
-  answerWords: readonly string[],
-  guesses: readonly string[],
-  patterns: readonly number[],
-  pm: PatternMatrix | null,
-): number[] {
-  let remaining = answerWords.map((_, i) => i);
+  allowedWords: Word[],
+  answerWords: Word[],
+  pm: PatternMatrix,
+  guesses: Word[],
+  patterns: number[],
+): Word[] {
+  const allowedIndex = buildWordIndex(allowedWords);
+  let candidateIndices: number[] = [];
 
-  for (let i = 0; i < guesses.length; i++) {
-    const guess = (guesses[i] ?? "").toLowerCase();
-    const pattern = patterns[i] ?? 0;
-    const guessIndex = pm ? pm.getGuessIndex(guess) : -1;
+  for (let j = 0; j < answerWords.length; j++) {
+    candidateIndices.push(j);
+  }
 
-    remaining =
-      pm && guessIndex >= 0
-        ? pm.filterAnswers(guessIndex, pattern, remaining)
-        : remaining.filter((ai) => getPatternCode(guess, answerWords[ai] ?? "") === pattern);
+  for (let step = 0; step < guesses.length; step++) {
+    const guessWord = guesses[step];
+    const targetPattern = patterns[step];
+
+    if (guessWord === undefined || targetPattern === undefined) {
+      continue;
+    }
+
+    const guessIdx = allowedIndex.get(guessWord);
+
+    if (guessIdx === undefined) {
+      throw new Error(`Unknown guess word: ${guessWord}`);
+    }
+
+    candidateIndices = candidateIndices.filter(
+      (ansIdx) => pm.get(guessIdx, ansIdx) === targetPattern,
+    );
+  }
+
+  const remaining: Word[] = [];
+
+  for (const ansIdx of candidateIndices) {
+    const word = answerWords[ansIdx];
+
+    if (word !== undefined) {
+      remaining.push(word);
+    }
   }
 
   return remaining;
 }
 
 export function pickNextGuess(
-  allowedWords: readonly string[],
-  answerWords: readonly string[],
-  remainingAnswers: readonly number[],
-  strategy: Strategy,
-  pm: PatternMatrix | null,
-): string {
-  if (remainingAnswers.length === 1) {
-    return answerWords[remainingAnswers[0] ?? 0] ?? "";
+  allowedWords: Word[],
+  answerWords: Word[],
+  pm: PatternMatrix,
+  guesses: Word[],
+  patterns: number[],
+  strategy: Strategy = 'expected',
+): Word | null {
+  const remaining = filterRemainingAnswers(
+    allowedWords,
+    answerWords,
+    pm,
+    guesses,
+    patterns,
+  );
+
+  if (remaining.length === 0) {
+    return null;
   }
 
-  if (strategy === "fast") {
-    return pickByLetterFrequency(allowedWords, answerWords, remainingAnswers);
+  if (remaining.length === 1) {
+    const only = remaining[0];
+
+    return only !== undefined ? only : null;
   }
 
-  if (!pm) {
-    throw new Error("strategy requires precomputed pattern matrix");
+  // shortcut: precomputed optimal opener for full dictionary, recompute if dictionary changes
+  if (remaining.length === pm.answerCount) {
+    const opener = allowedWords.find((word) => word === 'tares');
+
+    if (opener !== undefined) {
+      return opener;
+    }
   }
 
-  return strategy === "entropy"
-    ? pickMostInformativeGuess(pm, remainingAnswers)
-    : pickMinExpectedStepsGuess(pm, remainingAnswers);
+  if (strategy === 'fast') {
+    return pickByLetterFrequency(remaining);
+  }
+
+  if (strategy === 'entropy') {
+    return pickMostInformativeGuess(allowedWords, answerWords, remaining, pm);
+  }
+
+  return pickMinExpectedStepsGuess(allowedWords, answerWords, remaining, pm);
 }

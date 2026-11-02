@@ -32,7 +32,6 @@
   --ring: #121212;
   --destructive: #d93829;
 
-  /* Authentic NYT Wordle tile palette */
   --tile-empty-border: #d3d6da;
   --tile-active-border: #878a8c;
   --tile-miss: #787c7e;
