@@ -31,8 +31,6 @@
   "devDependencies": {
     "@types/node": "^24.3.0",
     "@vercel/node": "^5.3.26",
-    "eslint": "^9.37.0",
-    "neostandard": "^0.12.2",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
     "typescript": "^5.9.2",
