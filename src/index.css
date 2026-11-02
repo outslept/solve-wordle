@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+
+  --color-tile-empty-border: var(--tile-empty-border);
+  --color-tile-active-border: var(--tile-active-border);
+  --color-tile-miss: var(--tile-miss);
+  --color-tile-spot: var(--tile-spot);
+  --color-tile-hit: var(--tile-hit);
+}
+
+:root {
+  --background: #f7f7f5;
+  --foreground: #121212;
+  --paper: #ffffff;
+  --surface: #eeeeec;
+  --muted: #e5e5e2;
+  --muted-foreground: #686865;
+  --border: rgba(18, 18, 18, 0.12);
+  --ring: #121212;
+  --destructive: #d93829;
+
+  /* Authentic NYT Wordle tile palette */
+  --tile-empty-border: #d3d6da;
+  --tile-active-border: #878a8c;
+  --tile-miss: #787c7e;
+  --tile-spot: #c9b458;
+  --tile-hit: #6aaa64;
+}
+
+@media (pointer: fine) {
+  html {
+    overscroll-behavior: none;
+  }
+}
+
+button,
+[role="radio"],
+input {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

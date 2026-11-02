@@ -1,18 +1,53 @@
-export const WORD_LEN = 5;
-export const MISS = 0;
-export const MISPLACED = 1;
-export const EXACT = 2;
-export const PATTERN_COUNT = 3 ** WORD_LEN;
+import type { Word } from '../solver/pattern.ts';
 
-export const ALPHABET_SIZE = 26;
-export const CHAR_CODE_OFFSET = 97;
-export const MAX_PATTERN_DIGIT = 2;
+export const MAX_TURNS = 6;
+export const PATTERN_BASE = 3;
 
-type Word = string & { readonly __brand: "word" };
+export type TileState = 'miss' | 'present' | 'correct';
 
-export type WordList = readonly Word[];
-export type WordCodes = Uint8Array;
+export const TILE_LABELS: Record<TileState, string> = {
+  miss: 'Gray (absent)',
+  present: 'Yellow (wrong spot)',
+  correct: 'Green (correct spot)',
+};
 
-export function isWord(value: unknown): value is Word {
-  return typeof value === "string" && /^[a-z]{5}$/.test(value);
+export interface WordsResponse {
+  allowedWords: Word[];
+  answerWords: Word[];
+}
+
+export interface NextGuessResponse {
+  nextGuess: Word | null;
+  possibleOutputsCount: number;
+  timeMs: number;
+}
+
+export interface StepRecord {
+  word: Word;
+  pattern: number;
+  remainingCount: number;
+  contradiction: boolean;
+}
+
+export function getTileState(pattern: number, colIndex: number): TileState {
+  const divisor = PATTERN_BASE ** colIndex;
+  const digit = Math.floor(pattern / divisor) % PATTERN_BASE;
+
+  if (digit === 2) {
+    return 'correct';
+  }
+
+  if (digit === 1) {
+    return 'present';
+  }
+
+  return 'miss';
+}
+
+export function cyclePatternTile(pattern: number, colIndex: number): number {
+  const divisor = PATTERN_BASE ** colIndex;
+  const digit = Math.floor(pattern / divisor) % PATTERN_BASE;
+  const nextDigit = (digit + 1) % PATTERN_BASE;
+
+  return pattern + (nextDigit - digit) * divisor;
 }
