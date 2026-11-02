@@ -1,5 +1,5 @@
-import type { Strategy, Word } from '../../solver/pattern.ts';
-import type { StepRecord } from '../types.ts';
+import type { Strategy, Word } from "../../solver/pattern.ts";
+import type { StepRecord } from "../types.ts";
 
 interface SolverInspectorProps {
   strategy: Strategy;
@@ -21,24 +21,20 @@ interface SolverInspectorProps {
 }
 
 const STRATEGIES: readonly { id: Strategy; label: string; hint: string }[] = [
-  { id: 'expected', label: 'Expected', hint: 'Minimize expected turns to win' },
-  { id: 'entropy', label: 'Entropy', hint: 'Maximize information gain' },
-  { id: 'fast', label: 'Fast', hint: 'Letter frequency heuristic' },
+  { id: "expected", label: "Expected", hint: "Minimize expected turns to win" },
+  { id: "entropy", label: "Entropy", hint: "Maximize information gain" },
+  { id: "fast", label: "Fast", hint: "Letter frequency heuristic" },
 ];
 
 export function SolverInspector(props: SolverInspectorProps) {
   const remainingCount = props.currentRemaining.length;
   const isSolved = remainingCount === 1 && !props.hasContradiction;
 
-  const isRecommendedInDraft =
-    props.bestGuess !== null && props.draftInput === props.bestGuess;
+  const isRecommendedInDraft = props.bestGuess !== null && props.draftInput === props.bestGuess;
 
   const reductionPct =
     props.answerCount > 0
-      ? Math.max(
-          0,
-          Math.min(100, (1 - remainingCount / props.answerCount) * 100),
-        )
+      ? Math.max(0, Math.min(100, (1 - remainingCount / props.answerCount) * 100))
       : 0;
 
   return (
@@ -58,13 +54,8 @@ export function SolverInspector(props: SolverInspectorProps) {
                 Solved
               </span>
             ) : (
-              <span
-                class="font-mono text-[11px] tabular-nums text-[#63635e]"
-                aria-live="polite"
-              >
-                {props.isSlowLoading
-                  ? 'Computing…'
-                  : `${props.computeTime}\u00A0ms`}
+              <span class="font-mono text-[11px] tabular-nums text-[#63635e]" aria-live="polite">
+                {props.isSlowLoading ? "Computing…" : `${props.computeTime}\u00A0ms`}
               </span>
             )}
           </div>
@@ -82,7 +73,7 @@ export function SolverInspector(props: SolverInspectorProps) {
                   key={item.id}
                   type="button"
                   aria-pressed={isActive}
-                  data-state={isActive ? 'active' : 'inactive'}
+                  data-state={isActive ? "active" : "inactive"}
                   onClick={() => props.onStrategyChange(item.id)}
                   title={item.hint}
                   class="px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-wider transition-colors cursor-pointer select-none data-[state=active]:bg-[#121212] data-[state=active]:text-[#f7f7f5] data-[state=inactive]:bg-[#f7f7f5] data-[state=inactive]:text-[#525252] hover:data-[state=inactive]:bg-white hover:data-[state=inactive]:text-[#121212]"
@@ -103,9 +94,9 @@ export function SolverInspector(props: SolverInspectorProps) {
               No matching words remain in the dictionary.
             </p>
             <p class="text-xs text-[#7f1d1d] leading-relaxed">
-              One of the tile feedback patterns on the board conflicts with all{' '}
-              {props.answerCount.toLocaleString()} official answers. Click any
-              row on the board to revise its colors.
+              One of the tile feedback patterns on the board conflicts with all{" "}
+              {props.answerCount.toLocaleString()} official answers. Click any row on the board to
+              revise its colors.
             </p>
             <div class="flex flex-wrap gap-2 pt-1">
               {props.steps.length > 0 && (
@@ -129,14 +120,14 @@ export function SolverInspector(props: SolverInspectorProps) {
         ) : (
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-1.5">
-              {(props.bestGuess ? props.bestGuess.split('') : ['—', '—', '—', '—', '—']).map(
+              {(props.bestGuess ? props.bestGuess.split("") : ["—", "—", "—", "—", "—"]).map(
                 (ch, idx) => (
                   <div
                     key={idx}
                     class={`size-12 sm:size-14 flex items-center justify-center font-mono text-2xl sm:text-3xl font-bold uppercase border-2 ${
                       isSolved
-                        ? 'bg-[#6aaa64] border-[#6aaa64] text-white'
-                        : 'bg-[#f7f7f5] border-[#121212] text-[#121212]'
+                        ? "bg-[#6aaa64] border-[#6aaa64] text-white"
+                        : "bg-[#f7f7f5] border-[#121212] text-[#121212]"
                     }`}
                   >
                     {ch}
@@ -203,7 +194,7 @@ export function SolverInspector(props: SolverInspectorProps) {
                     key={word}
                     type="button"
                     onClick={() => props.onSelectCandidate(word)}
-                    data-state={isTop ? 'recommended' : 'normal'}
+                    data-state={isTop ? "recommended" : "normal"}
                     class="px-2.5 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider border transition-colors cursor-pointer data-[state=recommended]:bg-[#121212] data-[state=recommended]:text-white data-[state=recommended]:border-[#121212] data-[state=normal]:bg-white data-[state=normal]:text-[#121212] data-[state=normal]:border-[#d6d6d2] hover:border-[#121212]"
                   >
                     {word}
@@ -237,18 +228,11 @@ export function SolverInspector(props: SolverInspectorProps) {
                 class="bg-white border border-[#d6d6d2] p-2.5 flex flex-col gap-1.5"
               >
                 <div class="flex items-baseline justify-between">
-                  <span class="font-mono text-sm font-bold text-[#121212]">
-                    {stat.letter}
-                  </span>
-                  <span class="font-mono text-[11px] tabular-nums text-[#63635e]">
-                    {stat.pct}%
-                  </span>
+                  <span class="font-mono text-sm font-bold text-[#121212]">{stat.letter}</span>
+                  <span class="font-mono text-[11px] tabular-nums text-[#63635e]">{stat.pct}%</span>
                 </div>
                 <div class="w-full h-1 bg-[#e5e5e0] overflow-hidden">
-                  <div
-                    class="h-full bg-[#121212]"
-                    style={{ width: `${stat.pct}%` }}
-                  />
+                  <div class="h-full bg-[#121212]" style={{ width: `${stat.pct}%` }} />
                 </div>
               </div>
             ))}

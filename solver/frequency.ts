@@ -1,4 +1,4 @@
-import { WORD_LEN } from './pattern.ts';
+import { WORD_LEN } from "./pattern.ts";
 
 const ALPHABET_SIZE = 26;
 const CHAR_CODE_A = 97;
@@ -10,7 +10,7 @@ export function scoreWordsByFrequency(
 ): Int32Array {
   const counts = new Int32Array(ALPHABET_SIZE);
   for (const answerIdx of remainingAnswers) {
-    const word = answerWords[answerIdx] ?? '';
+    const word = answerWords[answerIdx] ?? "";
     for (let i = 0; i < WORD_LEN; i++) {
       const c = word.charCodeAt(i) - CHAR_CODE_A;
       counts[c] = (counts[c] ?? 0) + 1;
@@ -19,7 +19,7 @@ export function scoreWordsByFrequency(
 
   const scores = new Int32Array(allowedWords.length);
   for (let i = 0; i < allowedWords.length; i++) {
-    const word = allowedWords[i] ?? '';
+    const word = allowedWords[i] ?? "";
     let seenMask = 0;
     let score = 0;
 
@@ -44,7 +44,7 @@ export function pickByLetterFrequency(
   remainingAnswers: readonly number[],
 ): string {
   const scores = scoreWordsByFrequency(allowedWords, answerWords, remainingAnswers);
-  let bestWord = allowedWords[0] ?? '';
+  let bestWord = allowedWords[0] ?? "";
   let bestScore = -1;
 
   for (let i = 0; i < allowedWords.length; i++) {

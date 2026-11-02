@@ -7,10 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check",
+    "generate": "node generate-pattern-matrix.ts",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

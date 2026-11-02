@@ -1,6 +1,6 @@
-import { SolverInspector } from './components/solver-inspector.tsx';
-import { WordleBoard } from './components/wordle-board.tsx';
-import { useWordleSolver } from './hooks/use-wordle-solver.ts';
+import { SolverInspector } from "./components/solver-inspector.tsx";
+import { WordleBoard } from "./components/wordle-board.tsx";
+import { useWordleSolver } from "./hooks/use-wordle-solver.ts";
 
 export function App() {
   const solver = useWordleSolver();
@@ -37,19 +37,11 @@ export function App() {
             class="flex items-center gap-1 text-white font-mono text-xs font-bold"
             aria-hidden="true"
           >
-            <span class="size-5 flex items-center justify-center bg-[#6aaa64]">
-              W
-            </span>
-            <span class="size-5 flex items-center justify-center bg-[#c9b458]">
-              O
-            </span>
-            <span class="size-5 flex items-center justify-center bg-[#787c7e]">
-              R
-            </span>
+            <span class="size-5 flex items-center justify-center bg-[#6aaa64]">W</span>
+            <span class="size-5 flex items-center justify-center bg-[#c9b458]">O</span>
+            <span class="size-5 flex items-center justify-center bg-[#787c7e]">R</span>
           </div>
-          <h1 class="text-sm font-bold tracking-tight uppercase">
-            Wordle Solver.
-          </h1>
+          <h1 class="text-sm font-bold tracking-tight uppercase">Wordle Solver.</h1>
         </div>
       </header>
 

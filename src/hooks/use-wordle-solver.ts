@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
-import { getPatternCode, isWord, WORD_LEN } from '../../solver/pattern.ts';
-import type { Strategy, Word } from '../../solver/pattern.ts';
-import { cyclePatternTile, MAX_TURNS } from '../types.ts';
-import type { NextGuessResponse, StepRecord, WordsResponse } from '../types.ts';
+import { useEffect, useMemo, useState } from "preact/hooks";
+import { getPatternCode, isWord, WORD_LEN } from "../../solver/pattern.ts";
+import type { Strategy, Word } from "../../solver/pattern.ts";
+import { cyclePatternTile, MAX_TURNS } from "../types.ts";
+import type { NextGuessResponse, StepRecord, WordsResponse } from "../types.ts";
 
-const ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
+const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 
 interface Turn {
   word: Word;
@@ -17,9 +17,9 @@ export function useWordleSolver() {
   const [isBooting, setIsBooting] = useState(true);
   const [bootError, setBootError] = useState<string | null>(null);
 
-  const [strategy, setStrategy] = useState<Strategy>('expected');
+  const [strategy, setStrategy] = useState<Strategy>("expected");
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [draftInput, setDraftInput] = useState('');
+  const [draftInput, setDraftInput] = useState("");
   const [activePattern, setActivePattern] = useState(0);
   const [inputError, setInputError] = useState<string | null>(null);
 
@@ -30,7 +30,7 @@ export function useWordleSolver() {
   useEffect(() => {
     let cancelled = false;
 
-    fetch('/api/words')
+    fetch("/api/words")
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
@@ -122,9 +122,9 @@ export function useWordleSolver() {
     let cancelled = false;
     setIsSlowLoading(true);
 
-    fetch('/api/next-guess', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/next-guess", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         guesses: turns.map((turn) => turn.word),
         patterns: turns.map((turn) => turn.pattern),
@@ -165,7 +165,10 @@ export function useWordleSolver() {
   }
 
   function updateDraft(raw: string) {
-    const cleaned = raw.replace(/[^a-zA-Z]/g, '').toLowerCase().slice(0, WORD_LEN);
+    const cleaned = raw
+      .replace(/[^a-zA-Z]/g, "")
+      .toLowerCase()
+      .slice(0, WORD_LEN);
     setDraftInput(cleaned);
     setInputError(null);
   }
@@ -176,7 +179,7 @@ export function useWordleSolver() {
     }
 
     if (!isWord(draftInput)) {
-      setInputError('Enter a 5-letter English word.');
+      setInputError("Enter a 5-letter English word.");
 
       return;
     }
@@ -188,7 +191,7 @@ export function useWordleSolver() {
     }
 
     setTurns((prev) => [...prev, { word: draftInput, pattern: activePattern }]);
-    setDraftInput('');
+    setDraftInput("");
     setActivePattern(0);
     setInputError(null);
   }
@@ -208,7 +211,7 @@ export function useWordleSolver() {
 
   function resetAll() {
     setTurns([]);
-    setDraftInput('');
+    setDraftInput("");
     setActivePattern(0);
     setInputError(null);
   }

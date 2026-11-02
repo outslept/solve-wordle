@@ -1,8 +1,8 @@
 export const WORD_LEN = 5;
 export const PATTERN_COUNT = 3 ** WORD_LEN;
 
-export type Strategy = 'fast' | 'entropy' | 'expected';
-export type Word = string & { readonly __brand: 'word' };
+export type Strategy = "fast" | "entropy" | "expected";
+export type Word = string & { readonly __brand: "word" };
 
 const MISPLACED = 1;
 const EXACT = 2;

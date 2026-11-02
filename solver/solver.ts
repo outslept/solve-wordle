@@ -1,8 +1,8 @@
-import { PATTERN_COUNT, getPatternCode, type Strategy } from './pattern.ts';
-import { PatternMatrix } from './matrix.ts';
-import { pickByLetterFrequency, scoreWordsByFrequency } from './frequency.ts';
+import { PATTERN_COUNT, getPatternCode, type Strategy } from "./pattern.ts";
+import { PatternMatrix } from "./matrix.ts";
+import { pickByLetterFrequency, scoreWordsByFrequency } from "./frequency.ts";
 
-const FIRST_GUESS = 'tares';
+const FIRST_GUESS = "tares";
 const CUTOFF_FRACTION = 1 / 3;
 const MIN_CANDIDATES = 20;
 
@@ -22,7 +22,7 @@ function selectCandidates(pm: PatternMatrix, remainingAnswers: readonly number[]
 
   // always include remaining answers so the solver can weigh immediate wins against pure probes
   for (const ansIdx of remainingAnswers) {
-    const guessIdx = pm.getGuessIndex(pm.answerWords[ansIdx] ?? '');
+    const guessIdx = pm.getGuessIndex(pm.answerWords[ansIdx] ?? "");
     if (guessIdx >= 0) candidates.add(guessIdx);
   }
 
@@ -58,7 +58,7 @@ export function pickMostInformativeGuess(
   remainingAnswers: readonly number[],
 ): string {
   if (pm.rows === 0 || remainingAnswers.length === 0) {
-    throw new Error('no candidates');
+    throw new Error("no candidates");
   }
   if (remainingAnswers.length === pm.cols && pm.getGuessIndex(FIRST_GUESS) >= 0) {
     return FIRST_GUESS;
@@ -78,7 +78,7 @@ export function pickMostInformativeGuess(
     }
   }
 
-  return pm.allowedWords[bestIndex] ?? '';
+  return pm.allowedWords[bestIndex] ?? "";
 }
 
 export function pickMinExpectedStepsGuess(
@@ -86,7 +86,7 @@ export function pickMinExpectedStepsGuess(
   remainingAnswers: readonly number[],
 ): string {
   if (pm.rows === 0 || remainingAnswers.length === 0) {
-    throw new Error('no candidates');
+    throw new Error("no candidates");
   }
   if (remainingAnswers.length === pm.cols && pm.getGuessIndex(FIRST_GUESS) >= 0) {
     return FIRST_GUESS;
@@ -98,7 +98,7 @@ export function pickMinExpectedStepsGuess(
 
   const remainingGuessIndices = new Set<number>();
   for (const ansIdx of remainingAnswers) {
-    const guessIdx = pm.getGuessIndex(pm.answerWords[ansIdx] ?? '');
+    const guessIdx = pm.getGuessIndex(pm.answerWords[ansIdx] ?? "");
     if (guessIdx >= 0) remainingGuessIndices.add(guessIdx);
   }
 
@@ -121,7 +121,7 @@ export function pickMinExpectedStepsGuess(
     }
   }
 
-  return pm.allowedWords[bestIndex] ?? '';
+  return pm.allowedWords[bestIndex] ?? "";
 }
 
 export function filterRemainingAnswers(
@@ -133,14 +133,14 @@ export function filterRemainingAnswers(
   let remaining = answerWords.map((_, i) => i);
 
   for (let i = 0; i < guesses.length; i++) {
-    const guess = (guesses[i] ?? '').toLowerCase();
+    const guess = (guesses[i] ?? "").toLowerCase();
     const pattern = patterns[i] ?? 0;
     const guessIndex = pm ? pm.getGuessIndex(guess) : -1;
 
     remaining =
       pm && guessIndex >= 0
         ? pm.filterAnswers(guessIndex, pattern, remaining)
-        : remaining.filter((ai) => getPatternCode(guess, answerWords[ai] ?? '') === pattern);
+        : remaining.filter((ai) => getPatternCode(guess, answerWords[ai] ?? "") === pattern);
   }
 
   return remaining;
@@ -154,18 +154,18 @@ export function pickNextGuess(
   pm: PatternMatrix | null,
 ): string {
   if (remainingAnswers.length === 1) {
-    return answerWords[remainingAnswers[0] ?? 0] ?? '';
+    return answerWords[remainingAnswers[0] ?? 0] ?? "";
   }
 
-  if (strategy === 'fast') {
+  if (strategy === "fast") {
     return pickByLetterFrequency(allowedWords, answerWords, remainingAnswers);
   }
 
   if (!pm) {
-    throw new Error('strategy requires precomputed pattern matrix');
+    throw new Error("strategy requires precomputed pattern matrix");
   }
 
-  return strategy === 'entropy'
+  return strategy === "entropy"
     ? pickMostInformativeGuess(pm, remainingAnswers)
     : pickMinExpectedStepsGuess(pm, remainingAnswers);
 }
