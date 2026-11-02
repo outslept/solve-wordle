@@ -1,6 +1,4 @@
-# solve-wordle.
-
-An information-theoretic Wordle "assistant" with an interactive 6×5 board.
+<img src="./.github/banner.png" align="center" />
 
 ## How It Works
 
