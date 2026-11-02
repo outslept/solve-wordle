@@ -1,6 +1,6 @@
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-import { generatePatternMatrix } from "./solver/matrix.js";
+import { generatePatternMatrix } from "./solver/matrix.ts";
 
 const dataDir = join(import.meta.dirname, "data");
 const allowedFile = join(dataDir, "allowed_words.txt");
